@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>トケイソウ・ロンド 〜 喫茶店7枚決闘 〜</title>
+<style>
+  :root {
+    --bg-wood: #22150f;
+    --table-mat: #2a3d31;
+    --gold: #d4af37;
+    --gold-light: #fbe697;
+    --card-bg: #fdf8ed;
+    --text-dark: #2c1e17;
+    --type-attack: #a33827;
+    --type-magic: #6b3e94;
+    --type-defense: #296d98;
+    --type-setup: #b37314;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background-color: var(--bg-wood);
+    color: #f3ece4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  header {
+    background: rgba(20, 10, 5, 0.95);
+    border-bottom: 2px solid var(--gold);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    z-index: 10;
+    flex-shrink: 0;
+  }
+  .title-logo {
+    font-weight: bold;
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+  }
+
+  /* Main Container */
+  #app {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at center, #2e4a3b 0%, #17241c 70%, #0d1611 100%);
+    overflow: hidden;
+  }
+
+  /* Screens */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.2s ease;
+  }
+  .hidden { display: none !important; }
+
+  /* Draft Screen */
+  #draft-screen {
+    background: rgba(15, 10, 6, 0.97);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .draft-sticky-header {
+    padding: 10px 14px;
+    background: rgba(28, 16, 10, 0.95);
+    border-bottom: 1px solid var(--gold);
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .draft-sticky-header h2 { color: var(--gold-light); font-size: 1.15rem; margin-bottom: 2px; }
+  .draft-count {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--gold);
+    margin: 4px 0;
+  }
+  .draft-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .draft-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 10px 100px;
+  }
+
+  .draft-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* General Card Styles */
+  .card {
+    width: 100%;
+    height: 200px;
+    background: var(--card-bg);
+    border: 2px solid #bba174;
+    border-radius: 8px;
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: transform 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .card:active {
+    transform: scale(0.97);
+  }
+  .card.selected {
+    border: 3px solid #28a745;
+    box-shadow: 0 0 14px rgba(40, 167, 69, 0.9);
+    background: #f0fff4;
+  }
+  .card.selected::after {
+    content: "✓ 選択中";
+    position: absolute;
+    top: -8px;
+    right: -6px;
+    background: #28a745;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .card.disabled-play {
+    opacity: 0.45;
+    filter: grayscale(50%);
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dcd1ba;
+    padding-bottom: 3px;
+    margin-bottom: 4px;
+  }
+  .card-cost {
+    background: #4a3423;
+    color: var(--gold-light);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 1px solid var(--gold);
+  }
+  .card-type-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+  }
+  .type-attack { background: var(--type-attack); }
+  .type-magic { background: var(--type-magic); }
+  .type-defense { background: var(--type-defense); }
+  .type-setup { background: var(--type-setup); }
+
+  .card-name {
+    font-size: 0.82rem;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    color: #2b180d;
+    height: 26px;
+    display: flex;
+    align-items: center;
+  }
+  .card-art {
+    height: 48px;
+    background: #eae2cf;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+    border: 1px inset #ddd3be;
+  }
+  .card-desc {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: #3b281f;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-top: 1px dashed #dcd1ba;
+    padding-top: 4px;
+    font-weight: 500;
+  }
+
+  /* Battle Arena */
+  #battle-screen {
+    padding: 6px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .player-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: rgba(22, 14, 9, 0.8);
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    flex-shrink: 0;
+  }
+  .leader-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 6px;
+    border: 2px solid var(--gold);
+    background: #3c2618;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+  }
+  .leader-avatar .avatar-icon { font-size: 1.4rem; }
+  .leader-avatar .leader-name {
+    font-size: 0.6rem;
+    color: var(--gold-light);
+    font-weight: bold;
+    margin-top: 1px;
+  }
+
+  .stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+  }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  .hp-bar-bg {
+    flex: 1;
+    height: 14px;
+    background: #441e17;
+    border-radius: 7px;
+    overflow: hidden;
+    border: 1px solid #753325;
+    position: relative;
+  }
+  .hp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d32f2f, #f44336);
+    transition: width 0.3s ease;
+  }
+  .hp-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+  }
+
+  .cost-gauge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+    color: var(--gold-light);
+  }
+  .cost-bubbles {
+    display: flex;
+    gap: 2px;
+  }
+  .cost-bubble {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #332014;
+    border: 1px solid var(--gold);
+  }
+  .cost-bubble.active {
+    background: radial-gradient(circle, #fbe697 30%, #d4af37 100%);
+    box-shadow: 0 0 4px var(--gold);
+  }
+
+  .setups-tray {
+    display: flex;
+    gap: 4px;
+    height: 32px;
+    align-items: center;
+  }
+  .setup-slot {
+    width: 28px;
+    height: 30px;
+    background: rgba(0,0,0,0.3);
+    border: 1px dashed var(--gold);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  /* Center Arena */
+  .battle-center {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    margin: 4px 0;
+    min-height: 80px;
+  }
+  .battle-log {
+    flex: 1;
+    background: rgba(10, 6, 4, 0.8);
+    border-radius: 6px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .log-line { color: #d8cebf; line-height: 1.3; }
+  .log-line.p1 { color: #64b5f6; }
+  .log-line.p2 { color: #ff8a65; }
+  .log-line.system { color: var(--gold-light); font-weight: bold; }
+  .log-line.highlight { color: #ffeb3b; font-weight: bold; }
+
+  .center-controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 105px;
+    flex-shrink: 0;
+  }
+
+  /* Opponent Hand */
+  .opponent-hand {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    padding: 4px 0;
+    flex-shrink: 0;
+  }
+  .opp-card-back {
+    width: 38px;
+    height: 52px;
+    background: repeating-linear-gradient(45deg, #422615, #422615 4px, #2a170c 4px, #2a170c 8px);
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  /* Player Hand (Horizontal Touch Scroll with Snap) */
+  .player-hand-container {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding: 8px 4px 10px;
+    height: 220px;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+  }
+  .player-hand-container .card {
+    width: 145px;
+    height: 200px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  /* CARD DETAIL INSPECTOR MODAL */
+  .card-inspect-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    padding: 16px;
+  }
+  .card-inspect-box {
+    background: #251710;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 18px;
+    max-width: 320px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.9);
+  }
+  .inspect-card-view {
+    width: 100%;
+    height: 260px;
+    background: var(--card-bg);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    color: var(--text-dark);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+  .inspect-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  /* Buttons */
+  .btn {
+    background: linear-gradient(135deg, #a36f2f 0%, #684115 100%);
+    color: #fff;
+    border: 1px solid var(--gold);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.15s;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #666;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, #d4af37 0%, #997b1a 100%);
+    color: #22150f;
+  }
+  .btn-full { width: 100%; }
+
+  /* Result Modal */
+  .dialog-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+  }
+  .dialog-box {
+    background: #251710;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 22px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+  }
+  .dialog-box h3 { color: var(--gold-light); margin-bottom: 10px; font-size: 1.25rem; }
+  .dialog-box p { color: #e0d5c1; font-size: 0.9rem; margin-bottom: 16px; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-logo">
+    <span>☕ 喫茶トケイソウ 決闘卓</span>
+    <span style="font-size:0.75rem; color:#bbaa99;">| トケイソウ・ロンド Ver 0.1</span>
+  </div>
+  <div style="font-size:0.8rem; color:var(--gold-light);">
+    手札7枚 ✕ 推しリーダー対戦
+  </div>
+</header>
+
+<div id="app">
+
+  <!-- ================= DRAFT SCREEN ================= -->
+  <div id="draft-screen" class="screen">
+    <div class="draft-sticky-header">
+      <h2>🎴 出撃手札の選抜（ドラフト）</h2>
+      <p style="font-size:0.75rem; color:#bbb;">カードをタップで詳細確認＆選択。14枚から7枚を選抜！</p>
+      <div class="draft-count">選択中: <span id="selected-count">0</span> / 7 枚</div>
+      <div class="draft-actions">
+        <button id="btn-auto-draft" class="btn">⚡ おまかせ選抜</button>
+        <button id="btn-confirm-draft" class="btn btn-gold" disabled>⚔️ 決闘開始！</button>
+      </div>
+    </div>
+    <div class="draft-scroll-area">
+      <div id="draft-grid" class="draft-grid"></div>
+    </div>
+  </div>
+
+  <!-- ================= BATTLE ARENA ================= -->
+  <div id="battle-screen" class="screen hidden">
+    
+    <!-- OPPONENT BAR -->
+    <div class="player-section">
+      <div class="leader-avatar" id="opp-avatar">
+        <span class="avatar-icon">🍵</span>
+        <span class="leader-name" id="opp-name">ちびステラ</span>
+      </div>
+      <div class="stats-container">
+        <div class="stat-row">
+          <span style="font-size:0.75rem; width:35px;">LIFE</span>
+          <div class="hp-bar-bg">
+            <div id="opp-hp-bar" class="hp-bar-fill" style="width: 100%;"></div>
+            <span id="opp-hp-text" class="hp-text">15 / 15</span>
+          </div>
+        </div>
+        <div class="stat-row">
+          <span style="font-size:0.75rem; width:35px;">COST</span>
+          <div class="cost-gauge">
+            <span id="opp-cost-num">1/1</span>
+            <div id="opp-cost-bubbles" class="cost-bubbles"></div>
+          </div>
+        </div>
+      </div>
+      <div class="setups-tray" id="opp-setups" title="設置中の調度品"></div>
+    </div>
+
+    <!-- OPPONENT HAND (HIDDEN) -->
+    <div class="opponent-hand" id="opp-hand"></div>
+
+    <!-- CENTER ARENA (LOG & CONTROLS) -->
+    <div class="battle-center">
+      <div class="battle-log" id="battle-log"></div>
+      <div class="center-controls">
+        <button id="btn-leader-skill" class="btn" style="font-size:0.75rem; padding:6px 4px;">
+          ✨ スキル発動<br><span style="font-size:0.65rem; opacity:0.8;">スチーム(Cost:2)</span>
+        </button>
+        <button id="btn-end-turn" class="btn btn-gold" style="font-size:0.8rem; padding:8px 4px;">
+          ⌛ ターン終了
+        </button>
+      </div>
+    </div>
+
+    <!-- PLAYER SECTION -->
+    <div class="player-section">
+      <div class="leader-avatar" id="player-avatar">
+        <span class="avatar-icon">☕</span>
+        <span class="leader-name">柊みずく</span>
+      </div>
+      <div class="stats-container">
+        <div class="stat-row">
+          <span style="font-size:0.75rem; width:35px;">LIFE</span>
+          <div class="hp-bar-bg">
+            <div id="p1-hp-bar" class="hp-bar-fill" style="width: 100%;"></div>
+            <span id="p1-hp-text" class="hp-text">15 / 15</span>
+          </div>
+        </div>
+        <div class="stat-row">
+          <span style="font-size:0.75rem; width:35px;">COST</span>
+          <div class="cost-gauge">
+            <span id="p1-cost-num">1/1</span>
+            <div id="p1-cost-bubbles" class="cost-bubbles"></div>
+          </div>
+        </div>
+      </div>
+      <div class="setups-tray" id="p1-setups" title="設置中の調度品"></div>
+    </div>
+
+    <!-- PLAYER HAND (Horizontal touch scroll) -->
+    <div class="player-hand-container" id="player-hand"></div>
+
+  </div>
+
+  <!-- ================= CARD DETAIL INSPECTOR MODAL ================= -->
+  <div id="card-inspect-modal" class="card-inspect-overlay hidden">
+    <div class="card-inspect-box">
+      <div id="inspect-card-content" class="inspect-card-view"></div>
+      <div class="inspect-actions">
+        <button id="btn-inspect-action" class="btn btn-gold btn-full">実行</button>
+        <button id="btn-inspect-close" class="btn" style="width:70px;">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RESULT MODAL ================= -->
+  <div id="result-modal" class="dialog-overlay hidden">
+    <div class="dialog-box">
+      <h3 id="result-title">🎉 決闘勝利！</h3>
+      <p id="result-desc">素晴らしい抽出でした！相手の体力を0に削り切りました。</p>
+      <button id="btn-restart" class="btn btn-gold" style="padding:10px 24px;">もう一度遊ぶ</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   AUDIO SYNTHESIZER (Web Audio API - Zero External Dependencies)
+   ============================================================ */
+class SoundFx {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+    }
+  }
+  playTone(freq, duration, type='sine', gainVal=0.1) {
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {}
+  }
+  click() { this.init(); this.playTone(800, 0.05, 'triangle', 0.08); }
+  playCard() { this.init(); this.playTone(450, 0.12, 'sine', 0.15); setTimeout(()=>this.playTone(650, 0.15, 'sine', 0.15), 60); }
+  damage() { this.init(); this.playTone(130, 0.25, 'sawtooth', 0.2); }
+  heal() { this.init(); this.playTone(520, 0.15, 'sine', 0.12); setTimeout(()=>this.playTone(780, 0.2, 'sine', 0.12), 100); }
+  fanfare() {
+    this.init();
+    [523, 659, 783, 1046].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 0.35, 'triangle', 0.18), i * 140);
+    });
+  }
+}
+const sfx = new SoundFx();
+
+/* ============================================================
+   CARD DEFINITIONS (40 Card Pool Candidates)
+   ============================================================ */
+const ALL_CARDS = [
+  // 抽出（ビター / 物理攻撃）
+  { id: 'c1', name: 'エスプレッソ抽出', type: 'attack', cost: 1, val: 2, icon: '☕', desc: '相手に2ダメージ。手軽な濃厚ショット。' },
+  { id: 'c2', name: '深煎りネルドリップ', type: 'attack', cost: 3, val: 5, icon: '🫗', desc: '相手に5ダメージ。力強いコクの一撃。' },
+  { id: 'c3', name: '氷出しアイスコーヒー', type: 'attack', cost: 2, val: 3, icon: '🧊', desc: '相手に3ダメージ。冷徹な味わい。' },
+  { id: 'c4', name: '極上マンデリン', type: 'attack', cost: 4, val: 7, icon: '✨', desc: '相手に7ダメージ。重厚なビターフィニッシュ。' },
+  { id: 'c5', name: 'クイック・アメリカーノ', type: 'attack', cost: 1, val: 1, icon: '💧', desc: '相手に1ダメージ。コストの余りで放つ牽制。' },
+  { id: 'c6', name: 'ダブルショット・バースト', type: 'attack', cost: 5, val: 9, icon: '💥', desc: '相手に9ダメージ。最大火力の必殺エスプレッソ。' },
+
+  // 香気（アロマ / 搦め手・貫通）
+  { id: 'c7', name: '焙煎の薫煙', type: 'magic', cost: 2, val: 3, icon: '💨', desc: '相手に3の貫通ダメージ。防壁をすり抜ける。' },
+  { id: 'c8', name: 'キャラメルシロップ', type: 'magic', cost: 3, val: 4, icon: '🍯', desc: '相手に4ダメージを与え、自分は1回復。' },
+  { id: 'c9', name: 'カフェイン・ショック', type: 'magic', cost: 4, val: 5, icon: '⚡', desc: '相手に5ダメージを与え、相手の最大コストを1遅延。' },
+  { id: 'c10', name: '真夜中の隠しスパイス', type: 'magic', cost: 2, val: 2, icon: '🌶️', desc: '相手に2ダメージ。次の自分の攻撃力+2。' },
+
+  // もてなし（迎撃 / 防御・回復）
+  { id: 'c11', name: 'お冷のおかわり', type: 'defense', cost: 1, val: 3, icon: '🥛', desc: '受けるダメージを3軽減する。' },
+  { id: 'c12', name: '看板娘の笑顔', type: 'defense', cost: 2, val: 5, icon: '🌸', desc: '受けるダメージを5軽減する。' },
+  { id: 'c13', name: '自家製焼きプリン', type: 'defense', cost: 2, val: 4, icon: '🍮', desc: '自分のLIFEを4回復する。心ほどける甘味。' },
+  { id: 'c14', name: '雨宿りの軒先', type: 'defense', cost: 3, val: 7, icon: '☔', desc: '受けるダメージを7軽減する。鉄壁の安らぎ。' },
+
+  // 仕込み（設置 / 永続効果）
+  { id: 'c15', name: '水出しドリッパー', type: 'setup', cost: 2, icon: '⏳', desc: '【設置】毎ターンの開始時、相手に1ダメージ。' },
+  { id: 'c16', name: 'アンティーク振り子時計', type: 'setup', cost: 3, icon: '⏰', desc: '【設置】毎ターンの開始時、追加でコスト+1獲得。' },
+  { id: 'c17', name: '特製ミルグラインダー', type: 'setup', cost: 2, icon: '⚙️', desc: '【設置】自分の［抽出］カードのダメージが常に+1。' },
+  { id: 'c18', name: '時計草の温室アロマ', type: 'setup', cost: 2, icon: '🌺', desc: '【設置】毎ターンの開始時、自分のLIFEを1回復。' },
+];
+
+/* ============================================================
+   GAME STATE
+   ============================================================ */
+let gameState = {
+  phase: 'draft', // 'draft', 'battle', 'ended'
+  turn: 1,
+  activePlayer: 'p1', // 'p1' (Player) or 'p2' (CPU)
+  
+  draftPool: [],
+  selectedDraftIds: [],
+
+  p1: {
+    name: '柊みずく',
+    maxHp: 15,
+    hp: 15,
+    maxCost: 1,
+    cost: 1,
+    hand: [],
+    setups: [],
+    skillUsedTurn: 0
+  },
+  p2: {
+    name: 'ちびステラ',
+    maxHp: 15,
+    hp: 15,
+    maxCost: 1,
+    cost: 1,
+    hand: [],
+    setups: [],
+    skillUsedTurn: 0
+  }
+};
+
+/* ============================================================
+   INIT & DRAFT FLOW
+   ============================================================ */
+function initGame() {
+  gameState.phase = 'draft';
+  gameState.turn = 1;
+  gameState.activePlayer = 'p1';
+  gameState.selectedDraftIds = [];
+  
+  gameState.p1.hp = 15;
+  gameState.p1.maxCost = 1;
+  gameState.p1.cost = 1;
+  gameState.p1.hand = [];
+  gameState.p1.setups = [];
+  gameState.p1.skillUsedTurn = 0;
+
+  gameState.p2.hp = 15;
+  gameState.p2.maxCost = 1;
+  gameState.p2.cost = 1;
+  gameState.p2.hand = [];
+  gameState.p2.setups = [];
+  gameState.p2.skillUsedTurn = 0;
+
+  // Deal 14 random cards for drafting
+  const shuffled = [...ALL_CARDS].sort(() => 0.5 - Math.random());
+  gameState.draftPool = shuffled.slice(0, 14);
+
+  // CPU randomly chooses 7 cards from remaining pool
+  const cpuCandidates = [...ALL_CARDS].sort(() => 0.5 - Math.random());
+  gameState.p2.hand = cpuCandidates.slice(0, 7);
+
+  renderDraftScreen();
+  
+  document.getElementById('draft-screen').classList.remove('hidden');
+  document.getElementById('battle-screen').classList.add('hidden');
+  document.getElementById('result-modal').classList.add('hidden');
+}
+
+function renderDraftScreen() {
+  const grid = document.getElementById('draft-grid');
+  grid.innerHTML = '';
+  
+  gameState.draftPool.forEach(card => {
+    const isSelected = gameState.selectedDraftIds.includes(card.id);
+    const cardEl = createCardElement(card, isSelected, () => {
+      openCardInspect(card, 'draft');
+    });
+    grid.appendChild(cardEl);
+  });
+
+  const countSpan = document.getElementById('selected-count');
+  countSpan.textContent = gameState.selectedDraftIds.length;
+
+  const btnConfirm = document.getElementById('btn-confirm-draft');
+  btnConfirm.disabled = (gameState.selectedDraftIds.length !== 7);
+}
+
+function toggleDraftCard(cardId) {
+  sfx.click();
+  const idx = gameState.selectedDraftIds.indexOf(cardId);
+  if (idx >= 0) {
+    gameState.selectedDraftIds.splice(idx, 1);
+  } else {
+    if (gameState.selectedDraftIds.length < 7) {
+      gameState.selectedDraftIds.push(cardId);
+    }
+  }
+  renderDraftScreen();
+}
+
+function openCardInspect(card, mode, handIndex = -1) {
+  sfx.click();
+  const modal = document.getElementById('card-inspect-modal');
+  const content = document.getElementById('inspect-card-content');
+  const btnAction = document.getElementById('btn-inspect-action');
+  const btnClose = document.getElementById('btn-inspect-close');
+
+  content.innerHTML = `
+    <div class="card-top" style="border-bottom: 2px solid var(--gold); padding-bottom: 6px; margin-bottom: 8px;">
+      <span class="card-cost" style="width: 32px; height: 32px; font-size: 1.1rem;">${card.cost}</span>
+      <span class="card-type-badge type-${card.type}" style="font-size: 0.85rem; padding: 3px 8px;">${getTypeName(card.type)}</span>
+    </div>
+    <div class="card-name" style="font-size: 1.15rem; height: 32px; margin-bottom: 6px;">${card.name}</div>
+    <div class="card-art" style="height: 75px; font-size: 3rem; margin-bottom: 10px;">${card.icon}</div>
+    <div class="card-desc" style="font-size: 0.95rem; line-height: 1.5; color: #22150f; font-weight: 500;">${card.desc}</div>
+  `;
+
+  if (mode === 'draft') {
+    const isSelected = gameState.selectedDraftIds.includes(card.id);
+    if (isSelected) {
+      btnAction.textContent = '❌ 選抜から外す';
+      btnAction.className = 'btn btn-full';
+      btnAction.style.background = '#8c3224';
+      btnAction.disabled = false;
+      btnAction.onclick = () => {
+        toggleDraftCard(card.id);
+        modal.classList.add('hidden');
+      };
+    } else {
+      const full = gameState.selectedDraftIds.length >= 7;
+      btnAction.textContent = full ? '⚠️ 7枚上限です' : '✅ このカードを選ぶ';
+      btnAction.className = 'btn btn-gold btn-full';
+      btnAction.disabled = full;
+      btnAction.onclick = () => {
+        if (!full) {
+          toggleDraftCard(card.id);
+          modal.classList.add('hidden');
+        }
+      };
+    }
+  } else if (mode === 'battle') {
+    const isPlayerTurn = (gameState.activePlayer === 'p1');
+    const canAfford = isPlayerTurn && (gameState.p1.cost >= card.cost);
+    btnAction.textContent = canAfford ? `⚡ プレイする (Cost: ${card.cost})` : (isPlayerTurn ? '❌ コスト不足' : '❌ 相手のターン');
+    btnAction.className = 'btn btn-gold btn-full';
+    btnAction.disabled = !canAfford;
+    btnAction.onclick = () => {
+      if (canAfford) {
+        modal.classList.add('hidden');
+        playPlayerCard(handIndex);
+      }
+    };
+  }
+
+  btnClose.onclick = () => {
+    sfx.click();
+    modal.classList.add('hidden');
+  };
+
+  modal.classList.remove('hidden');
+}
+
+function autoDraft() {
+  sfx.click();
+  // Pick balanced 7: at least 2 attacks, 1 magic, 1 defense, 1 setup
+  gameState.selectedDraftIds = [];
+  const pool = [...gameState.draftPool].sort(() => 0.5 - Math.random());
+  gameState.selectedDraftIds = pool.slice(0, 7).map(c => c.id);
+  renderDraftScreen();
+}
+
+function confirmDraft() {
+  if (gameState.selectedDraftIds.length !== 7) return;
+  sfx.fanfare();
+  gameState.p1.hand = gameState.draftPool.filter(c => gameState.selectedDraftIds.includes(c.id));
+  startBattle();
+}
+
+/* ============================================================
+   BATTLE FLOW
+   ============================================================ */
+function startBattle() {
+  gameState.phase = 'battle';
+  document.getElementById('draft-screen').classList.add('hidden');
+  document.getElementById('battle-screen').classList.remove('hidden');
+  
+  clearLog();
+  log('【決闘開始】トケイソウ・ロンドの針が動き出しました！', 'system');
+  log('お互いの初期LIFEは 15。先に相手を飲み干した方の勝利です！', 'system');
+
+  renderBattle();
+}
+
+function renderBattle() {
+  // HP Bars
+  const p1HpPct = Math.max(0, (gameState.p1.hp / gameState.p1.maxHp) * 100);
+  const p2HpPct = Math.max(0, (gameState.p2.hp / gameState.p2.maxHp) * 100);
+  document.getElementById('p1-hp-bar').style.width = p1HpPct + '%';
+  document.getElementById('p1-hp-text').textContent = `${gameState.p1.hp} / ${gameState.p1.maxHp}`;
+  document.getElementById('opp-hp-bar').style.width = p2HpPct + '%';
+  document.getElementById('opp-hp-text').textContent = `${gameState.p2.hp} / ${gameState.p2.maxHp}`;
+
+  // Costs
+  document.getElementById('p1-cost-num').textContent = `${gameState.p1.cost} / ${gameState.p1.maxCost}`;
+  renderCostBubbles('p1-cost-bubbles', gameState.p1.cost, gameState.p1.maxCost);
+  document.getElementById('opp-cost-num').textContent = `${gameState.p2.cost} / ${gameState.p2.maxCost}`;
+  renderCostBubbles('opp-cost-bubbles', gameState.p2.cost, gameState.p2.maxCost);
+
+  // Setups
+  renderSetups('p1-setups', gameState.p1.setups);
+  renderSetups('opp-setups', gameState.p2.setups);
+
+  // Opponent Hand (Face down)
+  const oppHandEl = document.getElementById('opp-hand');
+  oppHandEl.innerHTML = '';
+  gameState.p2.hand.forEach(() => {
+    const back = document.createElement('div');
+    back.className = 'opp-card-back';
+    oppHandEl.appendChild(back);
+  });
+
+  // Player Hand
+  const p1HandEl = document.getElementById('player-hand');
+  p1HandEl.innerHTML = '';
+  const isPlayerTurn = (gameState.activePlayer === 'p1');
+  gameState.p1.hand.forEach((card, idx) => {
+    const canAfford = isPlayerTurn && (gameState.p1.cost >= card.cost);
+    const cardEl = createCardElement(card, false, () => {
+      openCardInspect(card, 'battle', idx);
+    });
+    if (!canAfford) cardEl.classList.add('disabled-play');
+    p1HandEl.appendChild(cardEl);
+  });
+
+  // Controls
+  const btnSkill = document.getElementById('btn-leader-skill');
+  const canUseSkill = isPlayerTurn && (gameState.p1.cost >= 2) && (gameState.p1.skillUsedTurn !== gameState.turn);
+  btnSkill.disabled = !canUseSkill;
+
+  document.getElementById('btn-end-turn').disabled = !isPlayerTurn;
+}
+
+function renderCostBubbles(containerId, current, max) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  for (let i = 1; i <= Math.min(10, max); i++) {
+    const bubble = document.createElement('div');
+    bubble.className = 'cost-bubble' + (i <= current ? ' active' : '');
+    el.appendChild(bubble);
+  }
+}
+
+function renderSetups(containerId, setups) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  setups.forEach(s => {
+    const slot = document.createElement('div');
+    slot.className = 'setup-slot';
+    slot.textContent = s.icon;
+    slot.title = `${s.name}: ${s.desc}`;
+    el.appendChild(slot);
+  });
+}
+
+function createCardElement(card, isSelected, onClick) {
+  const el = document.createElement('div');
+  el.className = 'card' + (isSelected ? ' selected' : '');
+  el.onclick = onClick;
+
+  el.innerHTML = `
+    <div class="card-top">
+      <span class="card-cost">${card.cost}</span>
+      <span class="card-type-badge type-${card.type}">${getTypeName(card.type)}</span>
+    </div>
+    <div class="card-name">${card.name}</div>
+    <div class="card-art">${card.icon}</div>
+    <div class="card-desc">${card.desc}</div>
+  `;
+  return el;
+}
+
+function getTypeName(type) {
+  switch(type) {
+    case 'attack': return '抽出';
+    case 'magic': return '香気';
+    case 'defense': return 'もてなし';
+    case 'setup': return '仕込み';
+    default: return '汎用';
+  }
+}
+
+/* ============================================================
+   BATTLE ACTIONS
+   ============================================================ */
+function playPlayerCard(index) {
+  if (gameState.activePlayer !== 'p1') return;
+  const card = gameState.p1.hand[index];
+  if (gameState.p1.cost < card.cost) return;
+
+  // Deduct cost and remove card from hand (Blade Rondo single-use)
+  gameState.p1.cost -= card.cost;
+  gameState.p1.hand.splice(index, 1);
+  sfx.playCard();
+
+  log(`柊みずく が『${card.name}』をプレイ！`, 'p1');
+  executeCardEffect('p1', 'p2', card);
+
+  renderBattle();
+  checkWinLoss();
+}
+
+function usePlayerSkill() {
+  if (gameState.activePlayer !== 'p1') return;
+  if (gameState.p1.cost < 2) return;
+  if (gameState.p1.skillUsedTurn === gameState.turn) return;
+
+  gameState.p1.cost -= 2;
+  gameState.p1.skillUsedTurn = gameState.turn;
+  sfx.heal();
+
+  gameState.p1.hp = Math.min(gameState.p1.maxHp, gameState.p1.hp + 2);
+  log(`柊みずく がリーダー能力『スチームミルク』を発動！LIFEを2回復。(現在: ${gameState.p1.hp})`, 'p1');
+
+  renderBattle();
+}
+
+function executeCardEffect(source, target, card) {
+  const src = gameState[source];
+  const tgt = gameState[target];
+
+  // Check setup bonuses
+  let bonusAtk = 0;
+  if (src.setups.some(s => s.id === 'c17')) bonusAtk += 1; // Grinder
+
+  if (card.type === 'attack') {
+    let dmg = card.val + bonusAtk;
+    // Check if target has defense response in setups or shields
+    sfx.damage();
+    tgt.hp -= dmg;
+    log(`💥 『${card.name}』が直撃！ ${target === 'p1' ? '柊みずく' : 'ちびステラ'} に ${dmg} ダメージ！`, 'highlight');
+  } else if (card.type === 'magic') {
+    sfx.damage();
+    tgt.hp -= card.val;
+    log(`✨ 『${card.name}』の香気が浸透！ 相手に ${card.val} の貫通ダメージ！`, 'highlight');
+    if (card.id === 'c8') { // caramel
+      src.hp = Math.min(src.maxHp, src.hp + 1);
+      log(`🍯 シロップの効果でLIFEが1回復。`, 'p1');
+    }
+  } else if (card.type === 'defense') {
+    sfx.heal();
+    src.hp = Math.min(src.maxHp, src.hp + card.val);
+    log(`🛡️ 『${card.name}』により、LIFEが ${card.val} 回復・整いました！`, 'system');
+  } else if (card.type === 'setup') {
+    src.setups.push(card);
+    log(`⚙️ 『${card.name}』を卓上に設置しました！`, 'system');
+  }
+}
+
+function endTurn() {
+  if (gameState.activePlayer !== 'p1') return;
+  sfx.click();
+  gameState.activePlayer = 'p2';
+  log(`--- ターン終了（相手のターン） ---`, 'system');
+  renderBattle();
+
+  setTimeout(cpuTurn, 1000);
+}
+
+/* ============================================================
+   CPU AI LOGIC
+   ============================================================ */
+function cpuTurn() {
+  if (gameState.phase !== 'battle') return;
+
+  // Turn Start Upkeep for CPU
+  gameState.p2.maxCost = Math.min(10, gameState.p2.maxCost + 1);
+  gameState.p2.cost = gameState.p2.maxCost;
+
+  // Trigger CPU setups
+  triggerSetups('p2', 'p1');
+  if (checkWinLoss()) return;
+
+  log(`ちびステラ のターン (コスト: ${gameState.p2.cost})`, 'p2');
+  renderBattle();
+
+  setTimeout(cpuThinkAndPlay, 800);
+}
+
+function cpuThinkAndPlay() {
+  if (gameState.phase !== 'battle') return;
+
+  // AI Card Selection Strategy
+  let played = false;
+  
+  // Sort playable cards by highest value/cost
+  const playable = gameState.p2.hand
+    .map((c, i) => ({ card: c, index: i }))
+    .filter(item => item.card.cost <= gameState.p2.cost);
+
+  if (playable.length > 0) {
+    // If low HP, prefer defense
+    if (gameState.p2.hp <= 6) {
+      const defCard = playable.find(p => p.card.type === 'defense');
+      if (defCard) {
+        playCpuCard(defCard.index);
+        played = true;
+      }
+    }
+
+    if (!played) {
+      // Prioritize setups first turn or high attack
+      const setupCard = playable.find(p => p.card.type === 'setup' && !gameState.p2.setups.some(s => s.id === p.card.id));
+      if (setupCard) {
+        playCpuCard(setupCard.index);
+        played = true;
+      } else {
+        // Play strongest attack/magic
+        playable.sort((a,b) => (b.card.val || 0) - (a.card.val || 0));
+        playCpuCard(playable[0].index);
+        played = true;
+      }
+    }
+  }
+
+  // If CPU has remaining cost, maybe play another card after delay
+  if (played && gameState.p2.cost > 0) {
+    setTimeout(cpuThinkAndPlay, 1000);
+    return;
+  }
+
+  // End CPU turn
+  setTimeout(() => {
+    gameState.turn++;
+    gameState.activePlayer = 'p1';
+    
+    // Player Turn Upkeep
+    gameState.p1.maxCost = Math.min(10, gameState.p1.maxCost + 1);
+    gameState.p1.cost = gameState.p1.maxCost;
+
+    log(`===============================`, 'system');
+    log(`【第 ${gameState.turn} ターン】 柊みずく の番です (Cost: ${gameState.p1.cost})`, 'system');
+    
+    // Trigger Player setups
+    triggerSetups('p1', 'p2');
+
+    renderBattle();
+    checkWinLoss();
+  }, 1000);
+}
+
+function playCpuCard(index) {
+  const card = gameState.p2.hand[index];
+  gameState.p2.cost -= card.cost;
+  gameState.p2.hand.splice(index, 1);
+  sfx.playCard();
+
+  log(`ちびステラ が『${card.name}』を繰り出してきた！`, 'p2');
+  executeCardEffect('p2', 'p1', card);
+
+  renderBattle();
+  checkWinLoss();
+}
+
+function triggerSetups(owner, opponent) {
+  const p = gameState[owner];
+  const opp = gameState[opponent];
+  const pName = owner === 'p1' ? '柊みずく' : 'ちびステラ';
+
+  p.setups.forEach(s => {
+    if (s.id === 'c15') { // dripper
+      opp.hp -= 1;
+      log(`💧 ${pName} の水出しドリッパーが滴り、1ダメージ！`, 'system');
+    } else if (s.id === 'c16') { // clock
+      p.cost = Math.min(10, p.cost + 1);
+      log(`⏰ 振り子時計がチクタク進み、追加コスト+1！`, 'system');
+    } else if (s.id === 'c18') { // aroma greenhouse
+      p.hp = Math.min(p.maxHp, p.hp + 1);
+      log(`🌺 温室アロマの香りでLIFEが1回復。`, 'system');
+    }
+  });
+}
+
+function checkWinLoss() {
+  if (gameState.p2.hp <= 0) {
+    gameState.phase = 'ended';
+    sfx.fanfare();
+    showResult(true, '🎉 決闘大勝利！', 'ちびステラのLIFEを0に削り切りました！完璧な7枚の抽出手順でしたね！');
+    return true;
+  }
+  if (gameState.p1.hp <= 0) {
+    gameState.phase = 'ended';
+    sfx.damage();
+    showResult(false, '💀 敗北……', '苦い一杯となってしまいました……。次は7枚のドラフト構成を見直してリベンジしましょう！');
+    return true;
+  }
+  return false;
+}
+
+function showResult(isWin, title, desc) {
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-desc').textContent = desc;
+  document.getElementById('result-modal').classList.remove('hidden');
+}
+
+function log(msg, type='normal') {
+  const el = document.getElementById('battle-log');
+  const line = document.createElement('div');
+  line.className = `log-line ${type}`;
+  line.textContent = msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('battle-log').innerHTML = '';
+}
+
+/* ============================================================
+   EVENT LISTENERS
+   ============================================================ */
+document.getElementById('btn-auto-draft').onclick = autoDraft;
+document.getElementById('btn-confirm-draft').onclick = confirmDraft;
+document.getElementById('btn-leader-skill').onclick = usePlayerSkill;
+document.getElementById('btn-end-turn').onclick = endTurn;
+document.getElementById('btn-restart').onclick = initGame;
+
+// Start game on load
+window.onload = initGame;
+</script>
+
+</body>
+</html>
