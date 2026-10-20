@@ -560,6 +560,22 @@
       <h2>🎴 出撃手札の選抜（ドラフト）</h2>
       <p style="font-size:0.75rem; color:#bbb;">カードをタップで詳細確認＆選択。14枚から7枚を選抜！</p>
       
+      <!-- Player Name Input -->
+      <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin: 4px 0 6px;">
+        <span style="font-size:0.75rem; color:#d0c4b6;">👤 名前:</span>
+        <input type="text" id="player-name-input" maxlength="10" placeholder="プレイヤー名" style="
+          background: #332014;
+          border: 1px solid var(--gold);
+          color: #fff;
+          font-weight: bold;
+          font-size: 0.8rem;
+          padding: 3px 8px;
+          border-radius: 4px;
+          width: 120px;
+          text-align: center;
+        ">
+      </div>
+
       <!-- Skill Selector -->
       <div class="skill-selector-container">
         <span style="font-size:0.72rem; color:var(--gold-light); font-weight:bold;">✨ リーダースキル選択</span>
@@ -629,7 +645,7 @@
     <div class="player-section">
       <div class="leader-avatar" id="player-avatar">
         <span class="avatar-icon">☕</span>
-        <span class="leader-name">柊みずく</span>
+        <span class="leader-name" id="p1-display-name">見習いバリスタ</span>
       </div>
       <div class="stats-container">
         <div class="stat-row">
@@ -762,7 +778,7 @@ let gameState = {
   selectedDraftIds: [],
 
   p1: {
-    name: '柊みずく',
+    name: '見習いバリスタ',
     maxHp: 15,
     hp: 15,
     maxCost: 1,
@@ -816,6 +832,18 @@ function initGame() {
   // CPU randomly chooses 7 cards from remaining pool
   const cpuCandidates = [...ALL_CARDS].sort(() => 0.5 - Math.random());
   gameState.p2.hand = cpuCandidates.slice(0, 7);
+
+  const savedName = localStorage.getItem('tokeisou_name') || '見習いバリスタ';
+  gameState.p1.name = savedName;
+  const nameInput = document.getElementById('player-name-input');
+  if (nameInput) {
+    nameInput.value = savedName;
+    nameInput.oninput = () => {
+      const val = nameInput.value.trim() || '見習いバリスタ';
+      gameState.p1.name = val;
+      localStorage.setItem('tokeisou_name', val);
+    };
+  }
 
   setupSkillSelector();
   renderDraftScreen();
@@ -956,6 +984,7 @@ function startBattle() {
   gameState.phase = 'battle';
   document.getElementById('draft-screen').classList.add('hidden');
   document.getElementById('battle-screen').classList.remove('hidden');
+  document.getElementById('p1-display-name').textContent = gameState.p1.name;
   
   clearLog();
   log('【決闘開始】トケイソウ・ロンドの針が動き出しました！', 'system');
@@ -1082,7 +1111,7 @@ function playPlayerCard(index) {
   gameState.p1.discardPile.push(card);
   sfx.playCard();
 
-  log(`柊みずく が『${card.name}』をプレイ！`, 'p1');
+  log(`${gameState.p1.name} が『${card.name}』をプレイ！`, 'p1');
   executeCardEffect('p1', 'p2', card);
 
   renderBattle();
@@ -1101,21 +1130,21 @@ function usePlayerSkill() {
   if (skill === 'heal') {
     sfx.heal();
     gameState.p1.hp = Math.min(gameState.p1.maxHp, gameState.p1.hp + 2);
-    log(`柊みずく がリーダー能力『スチームミルク』を発動！LIFEを2回復。(現在: ${gameState.p1.hp})`, 'p1');
+    log(`${gameState.p1.name} がリーダー能力『スチームミルク』を発動！LIFEを2回復。(現在: ${gameState.p1.hp})`, 'p1');
   } else if (skill === 'attack') {
     sfx.damage();
     gameState.p2.hp -= 2;
-    log(`💥 柊みずく がリーダー能力『直火焙煎』を発動！ちびステラ に 2 ダメージ！(残LIFE: ${gameState.p2.hp})`, 'highlight');
+    log(`💥 ${gameState.p1.name} がリーダー能力『直火焙煎』を発動！ちびステラ に 2 ダメージ！(残LIFE: ${gameState.p2.hp})`, 'highlight');
     if (checkWinLoss()) return;
   } else if (skill === 'support') {
     sfx.heal();
     if (gameState.p1.discardPile && gameState.p1.discardPile.length > 0) {
       const recovered = gameState.p1.discardPile.pop();
       gameState.p1.hand.push(recovered);
-      log(`⏳ 柊みずく がリーダー能力『時計草の針巻き戻し』を発動！時間を巻き戻し、使用済みの『${recovered.name}』を手札に回収！`, 'highlight');
+      log(`⏳ ${gameState.p1.name} がリーダー能力『時計草の針巻き戻し』を発動！時間を巻き戻し、使用済みの『${recovered.name}』を手札に回収！`, 'highlight');
     } else {
       gameState.p1.cost = Math.min(10, gameState.p1.cost + 1);
-      log(`⚙️ 柊みずく がリーダー能力『時計草の歯車』を発動！時計の針を進め、追加コスト+1獲得！`, 'p1');
+      log(`⚙️ ${gameState.p1.name} がリーダー能力『時計草の歯車』を発動！時計の針を進め、追加コスト+1獲得！`, 'p1');
     }
   }
 
@@ -1135,7 +1164,8 @@ function executeCardEffect(source, target, card) {
     // Check if target has defense response in setups or shields
     sfx.damage();
     tgt.hp -= dmg;
-    log(`💥 『${card.name}』が直撃！ ${target === 'p1' ? '柊みずく' : 'ちびステラ'} に ${dmg} ダメージ！`, 'highlight');
+    const tgtName = target === 'p1' ? gameState.p1.name : 'ちびステラ';
+    log(`💥 『${card.name}』が直撃！ ${tgtName} に ${dmg} ダメージ！`, 'highlight');
   } else if (card.type === 'magic') {
     sfx.damage();
     tgt.hp -= card.val;
@@ -1236,7 +1266,7 @@ function cpuThinkAndPlay() {
     gameState.p1.cost = gameState.p1.maxCost;
 
     log(`===============================`, 'system');
-    log(`【第 ${gameState.turn} ターン】 柊みずく の番です (Cost: ${gameState.p1.cost})`, 'system');
+    log(`【第 ${gameState.turn} ターン】 ${gameState.p1.name} の番です (Cost: ${gameState.p1.cost})`, 'system');
     
     // Trigger Player setups
     triggerSetups('p1', 'p2');
@@ -1262,7 +1292,7 @@ function playCpuCard(index) {
 function triggerSetups(owner, opponent) {
   const p = gameState[owner];
   const opp = gameState[opponent];
-  const pName = owner === 'p1' ? '柊みずく' : 'ちびステラ';
+  const pName = owner === 'p1' ? gameState.p1.name : 'ちびステラ';
 
   p.setups.forEach(s => {
     if (s.id === 'c15') { // dripper
