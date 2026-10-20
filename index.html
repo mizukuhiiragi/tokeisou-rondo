@@ -483,6 +483,39 @@
   }
   .btn-full { width: 100%; }
 
+  /* Skill Selector in Draft */
+  .skill-selector-container {
+    margin: 8px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .skill-btn-group {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+  .skill-choice-btn {
+    background: #332014;
+    border: 1px solid var(--gold);
+    color: #e0d5c1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.2;
+    text-align: center;
+  }
+  .skill-choice-btn.active {
+    background: linear-gradient(135deg, #d4af37 0%, #997b1a 100%);
+    color: #22150f;
+    box-shadow: 0 0 8px var(--gold);
+    border-color: #fff;
+  }
+
   /* Result Modal */
   .dialog-overlay {
     position: absolute;
@@ -526,6 +559,17 @@
     <div class="draft-sticky-header">
       <h2>🎴 出撃手札の選抜（ドラフト）</h2>
       <p style="font-size:0.75rem; color:#bbb;">カードをタップで詳細確認＆選択。14枚から7枚を選抜！</p>
+      
+      <!-- Skill Selector -->
+      <div class="skill-selector-container">
+        <span style="font-size:0.72rem; color:var(--gold-light); font-weight:bold;">✨ リーダースキル選択</span>
+        <div class="skill-btn-group" id="skill-selector">
+          <button class="skill-choice-btn active" data-skill="heal">🛡️ 回復<br><span style="font-size:0.6rem; opacity:0.85;">スチーム(Cost:2)</span></button>
+          <button class="skill-choice-btn" data-skill="attack">⚔️ 攻撃<br><span style="font-size:0.6rem; opacity:0.85;">直火焙煎(Cost:2)</span></button>
+          <button class="skill-choice-btn" data-skill="support">⚙️ 補助<br><span style="font-size:0.6rem; opacity:0.85;">針巻き戻し(Cost:2)</span></button>
+        </div>
+      </div>
+
       <div class="draft-count">選択中: <span id="selected-count">0</span> / 7 枚</div>
       <div class="draft-actions">
         <button id="btn-auto-draft" class="btn">⚡ おまかせ選抜</button>
@@ -725,7 +769,9 @@ let gameState = {
     cost: 1,
     hand: [],
     setups: [],
-    skillUsedTurn: 0
+    skillUsedTurn: 0,
+    skillType: 'heal',
+    discardPile: []
   },
   p2: {
     name: 'ちびステラ',
@@ -754,6 +800,7 @@ function initGame() {
   gameState.p1.hand = [];
   gameState.p1.setups = [];
   gameState.p1.skillUsedTurn = 0;
+  gameState.p1.discardPile = [];
 
   gameState.p2.hp = 15;
   gameState.p2.maxCost = 1;
@@ -770,11 +817,26 @@ function initGame() {
   const cpuCandidates = [...ALL_CARDS].sort(() => 0.5 - Math.random());
   gameState.p2.hand = cpuCandidates.slice(0, 7);
 
+  setupSkillSelector();
   renderDraftScreen();
   
   document.getElementById('draft-screen').classList.remove('hidden');
   document.getElementById('battle-screen').classList.add('hidden');
   document.getElementById('result-modal').classList.add('hidden');
+}
+
+function setupSkillSelector() {
+  const container = document.getElementById('skill-selector');
+  if (!container) return;
+  const btns = container.querySelectorAll('.skill-choice-btn');
+  btns.forEach(btn => {
+    btn.onclick = () => {
+      sfx.click();
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      gameState.p1.skillType = btn.dataset.skill;
+    };
+  });
 }
 
 function renderDraftScreen() {
@@ -945,6 +1007,11 @@ function renderBattle() {
 
   // Controls
   const btnSkill = document.getElementById('btn-leader-skill');
+  const skill = gameState.p1.skillType || 'heal';
+  let skillLabel = 'スチーム(Cost:2)';
+  if (skill === 'attack') skillLabel = '直火焙煎(Cost:2)';
+  if (skill === 'support') skillLabel = '針巻き戻し(Cost:2)';
+  btnSkill.innerHTML = `✨ スキル発動<br><span style="font-size:0.65rem; opacity:0.85;">${skillLabel}</span>`;
   const canUseSkill = isPlayerTurn && (gameState.p1.cost >= 2) && (gameState.p1.skillUsedTurn !== gameState.turn);
   btnSkill.disabled = !canUseSkill;
 
@@ -1011,6 +1078,8 @@ function playPlayerCard(index) {
   // Deduct cost and remove card from hand (Blade Rondo single-use)
   gameState.p1.cost -= card.cost;
   gameState.p1.hand.splice(index, 1);
+  if (!gameState.p1.discardPile) gameState.p1.discardPile = [];
+  gameState.p1.discardPile.push(card);
   sfx.playCard();
 
   log(`柊みずく が『${card.name}』をプレイ！`, 'p1');
@@ -1025,12 +1094,30 @@ function usePlayerSkill() {
   if (gameState.p1.cost < 2) return;
   if (gameState.p1.skillUsedTurn === gameState.turn) return;
 
+  const skill = gameState.p1.skillType || 'heal';
   gameState.p1.cost -= 2;
   gameState.p1.skillUsedTurn = gameState.turn;
-  sfx.heal();
 
-  gameState.p1.hp = Math.min(gameState.p1.maxHp, gameState.p1.hp + 2);
-  log(`柊みずく がリーダー能力『スチームミルク』を発動！LIFEを2回復。(現在: ${gameState.p1.hp})`, 'p1');
+  if (skill === 'heal') {
+    sfx.heal();
+    gameState.p1.hp = Math.min(gameState.p1.maxHp, gameState.p1.hp + 2);
+    log(`柊みずく がリーダー能力『スチームミルク』を発動！LIFEを2回復。(現在: ${gameState.p1.hp})`, 'p1');
+  } else if (skill === 'attack') {
+    sfx.damage();
+    gameState.p2.hp -= 2;
+    log(`💥 柊みずく がリーダー能力『直火焙煎』を発動！ちびステラ に 2 ダメージ！(残LIFE: ${gameState.p2.hp})`, 'highlight');
+    if (checkWinLoss()) return;
+  } else if (skill === 'support') {
+    sfx.heal();
+    if (gameState.p1.discardPile && gameState.p1.discardPile.length > 0) {
+      const recovered = gameState.p1.discardPile.pop();
+      gameState.p1.hand.push(recovered);
+      log(`⏳ 柊みずく がリーダー能力『時計草の針巻き戻し』を発動！時間を巻き戻し、使用済みの『${recovered.name}』を手札に回収！`, 'highlight');
+    } else {
+      gameState.p1.cost = Math.min(10, gameState.p1.cost + 1);
+      log(`⚙️ 柊みずく がリーダー能力『時計草の歯車』を発動！時計の針を進め、追加コスト+1獲得！`, 'p1');
+    }
+  }
 
   renderBattle();
 }
