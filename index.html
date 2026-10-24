@@ -1113,16 +1113,29 @@ function startWithShuffle() {
 
 
 function setupSkillSelector() {
-  const container = document.getElementById('skill-selector');
-  if (!container) return;
-  const btns = container.querySelectorAll('.skill-choice-btn');
-  btns.forEach(btn => {
-    btn.onclick = () => {
-      sfx.click();
-      btns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      gameState.p1.skillType = btn.dataset.skill;
-    };
+  const allContainers = [
+    document.getElementById('title-skill-selector'),
+    document.getElementById('skill-selector')
+  ].filter(Boolean);
+
+  allContainers.forEach(container => {
+    const btns = container.querySelectorAll('.skill-choice-btn');
+    btns.forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        const selected = btn.dataset.skill;
+        gameState.p1.skillType = selected;
+
+        // Synchronize all skill buttons across all screens
+        document.querySelectorAll('.skill-choice-btn').forEach(b => {
+          if (b.dataset.skill === selected) {
+            b.classList.add('active');
+          } else {
+            b.classList.remove('active');
+          }
+        });
+      };
+    });
   });
 }
 
@@ -1673,16 +1686,25 @@ function clearLog() {
 }
 
 /* ============================================================
-   EVENT LISTENERS
+   EVENT LISTENERS & STARTUP
    ============================================================ */
-document.getElementById('btn-auto-draft').onclick = autoDraft;
-document.getElementById('btn-confirm-draft').onclick = confirmDraft;
-document.getElementById('btn-leader-skill').onclick = usePlayerSkill;
-document.getElementById('btn-end-turn').onclick = endTurn;
-document.getElementById('btn-restart').onclick = showTitleScreen;
+function setupGlobalListeners() {
+  const btnStart = document.getElementById('btn-start-game');
+  if (btnStart) btnStart.onclick = startWithShuffle;
 
-// Start game on load
-window.onload = initGame;
+  document.getElementById('btn-auto-draft').onclick = autoDraft;
+  document.getElementById('btn-confirm-draft').onclick = confirmDraft;
+  document.getElementById('btn-leader-skill').onclick = usePlayerSkill;
+  document.getElementById('btn-end-turn').onclick = endTurn;
+  document.getElementById('btn-restart').onclick = showTitleScreen;
+  
+  setupSkillSelector();
+}
+
+window.onload = () => {
+  setupGlobalListeners();
+  showTitleScreen();
+};
 </script>
 
 </body>
