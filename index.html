@@ -536,6 +536,118 @@
     text-align: center;
     box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
   }
+  
+  /* Title & Entrance Screen */
+  .title-card-box {
+    background: #251710;
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 24px 20px;
+    max-width: 380px;
+    width: 90%;
+    margin: 40px auto 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  .title-cafe-badge {
+    display: inline-block;
+    background: rgba(212, 175, 55, 0.15);
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .name-input-large {
+    background: #1a0f0a;
+    border: 2px solid var(--gold);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.05rem;
+    padding: 8px 14px;
+    border-radius: 8px;
+    width: 80%;
+    text-align: center;
+    margin: 8px 0 16px;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+  }
+  .name-input-large:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+  }
+
+  /* Shuffle Overlay & Animations */
+  .shuffle-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 5, 2, 0.94);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.4s ease;
+  }
+  .shuffle-deck-container {
+    position: relative;
+    width: 140px;
+    height: 190px;
+    margin-bottom: 30px;
+    perspective: 800px;
+  }
+  .shuffle-card {
+    position: absolute;
+    width: 110px;
+    height: 160px;
+    background: linear-gradient(135deg, #3d2215, #1d0f09);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: var(--gold);
+    transform-origin: center center;
+  }
+  .shuffle-card.card-left {
+    animation: riffleLeft 0.5s ease-in-out infinite alternate;
+  }
+  .shuffle-card.card-right {
+    animation: riffleRight 0.5s ease-in-out infinite alternate;
+  }
+  .shuffle-card.card-center {
+    animation: riffleCenter 0.3s ease-in-out infinite alternate;
+  }
+  @keyframes riffleLeft {
+    0% { transform: translate(-30px, 0) rotate(-14deg) scale(0.95); }
+    100% { transform: translate(15px, -10px) rotate(4deg) scale(1.02); }
+  }
+  @keyframes riffleRight {
+    0% { transform: translate(30px, 0) rotate(14deg) scale(0.95); }
+    100% { transform: translate(-15px, -10px) rotate(-4deg) scale(1.02); }
+  }
+  @keyframes riffleCenter {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-8px) scale(1.05); }
+  }
+  .shuffle-text-title {
+    color: var(--gold-light);
+    font-size: 1.15rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+  .shuffle-text-step {
+    color: #e5d8c5;
+    font-size: 0.85rem;
+    min-height: 20px;
+    opacity: 0.9;
+  }
+
   .dialog-box h3 { color: var(--gold-light); margin-bottom: 10px; font-size: 1.25rem; }
   .dialog-box p { color: #e0d5c1; font-size: 0.9rem; margin-bottom: 16px; line-height: 1.4; }
 </style>
@@ -553,9 +665,54 @@
 </header>
 
 <div id="app">
+  <!-- ================= TITLE & ENTRANCE SCREEN ================= -->
+  <div id="title-screen" class="screen">
+    <div class="title-card-box">
+      <div class="title-cafe-badge">☕ 喫茶トケイソウ 決闘卓</div>
+      <h2 style="font-size:1.35rem; color:var(--gold-light); margin-bottom:6px;">トケイソウ・ロンド</h2>
+      <p style="font-size:0.75rem; color:#bfae9c; margin-bottom:18px;">
+        40枚の山札 ✕ 手札7枚の頭脳戦<br>
+        〜白Tシャツの無課金おじさんとマスターの神宣〜
+      </p>
+
+      <div style="margin-bottom:16px;">
+        <label for="player-name-large" style="display:block; font-size:0.75rem; color:#d0c4b6; margin-bottom:4px;">
+          👤 あなたのお名前
+        </label>
+        <input type="text" id="player-name-large" class="name-input-large" maxlength="10" placeholder="見習いバリスタ" value="見習いバリスタ">
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <span style="font-size:0.75rem; color:var(--gold-light); font-weight:bold; display:block; margin-bottom:8px;">
+          ✨ 初期リーダースキル選択
+        </span>
+        <div class="skill-btn-group" id="title-skill-selector" style="justify-content:center;">
+          <button class="skill-choice-btn active" data-skill="heal">🛡️ 回復<br><span style="font-size:0.6rem; opacity:0.85;">スチーム(Cost:2)</span></button>
+          <button class="skill-choice-btn" data-skill="attack">⚔️ 攻撃<br><span style="font-size:0.6rem; opacity:0.85;">直火焙煎(Cost:2)</span></button>
+          <button class="skill-choice-btn" data-skill="support">⚙️ 補助<br><span style="font-size:0.6rem; opacity:0.85;">針巻き戻し(Cost:2)</span></button>
+        </div>
+      </div>
+
+      <button id="btn-start-game" class="btn btn-gold btn-full" style="font-size:1.05rem; padding:12px 10px; font-weight:bold; border-radius:8px;">
+        🎴 カウンター席に着く（始める）
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= SHUFFLE & DEAL ANIMATION OVERLAY ================= -->
+  <div id="shuffle-overlay" class="shuffle-overlay hidden">
+    <div class="shuffle-deck-container">
+      <div class="shuffle-card card-left">☕</div>
+      <div class="shuffle-card card-right">🌺</div>
+      <div class="shuffle-card card-center">⏰</div>
+    </div>
+    <div class="shuffle-text-title" id="shuffle-title">山札40枚をシャッフル中…</div>
+    <div class="shuffle-text-step" id="shuffle-step">マスターが念入りにカードを繰っています</div>
+  </div>
+
 
   <!-- ================= DRAFT SCREEN ================= -->
-  <div id="draft-screen" class="screen">
+  <div id="draft-screen" class="screen hidden">
     <div class="draft-sticky-header">
       <h2>🎴 出撃手札の選抜（ドラフト）</h2>
       <p style="font-size:0.75rem; color:#bbb;">カードをタップで詳細確認＆選択。14枚から7枚を選抜！</p>
@@ -897,11 +1054,63 @@ function initGame() {
 
   setupSkillSelector();
   renderDraftScreen();
-  
-  document.getElementById('draft-screen').classList.remove('hidden');
+}
+
+function showTitleScreen() {
+  document.getElementById('title-screen').classList.remove('hidden');
+  document.getElementById('draft-screen').classList.add('hidden');
   document.getElementById('battle-screen').classList.add('hidden');
   document.getElementById('result-modal').classList.add('hidden');
+
+  const savedName = localStorage.getItem('tokeisou_name') || '見習いバリスタ';
+  gameState.p1.name = savedName;
+  const largeInput = document.getElementById('player-name-large');
+  if (largeInput) largeInput.value = savedName;
 }
+
+function startWithShuffle() {
+  sfx.click();
+  const largeInput = document.getElementById('player-name-large');
+  const name = largeInput ? (largeInput.value.trim() || '見習いバリスタ') : '見習いバリスタ';
+  gameState.p1.name = name;
+  localStorage.setItem('tokeisou_name', name);
+
+  // Initialize game state & 40-card pool
+  initGame();
+
+  // Hide Title Screen & Show Shuffle Overlay
+  document.getElementById('title-screen').classList.add('hidden');
+  const overlay = document.getElementById('shuffle-overlay');
+  const titleEl = document.getElementById('shuffle-title');
+  const stepEl = document.getElementById('shuffle-step');
+
+  overlay.classList.remove('hidden');
+  titleEl.textContent = '山札40枚をシャッフル中…';
+  stepEl.textContent = 'マスターが念入りにカードを繰っています';
+
+  // Play shuffle sound
+  sfx.shuffle();
+
+  // Multi-step animated sequence
+  setTimeout(() => {
+    sfx.shuffle();
+    titleEl.textContent = 'お互いに15枚ずつ配膳中…';
+    stepEl.textContent = '※ 残り10枚は非公開のまま除外されました';
+  }, 750);
+
+  setTimeout(() => {
+    sfx.fanfare();
+    titleEl.textContent = '配膳完了！';
+    stepEl.textContent = 'トレイに並んだ15枚から7枚を手札として選抜してください';
+  }, 1450);
+
+  setTimeout(() => {
+    overlay.classList.add('hidden');
+    document.getElementById('draft-screen').classList.remove('hidden');
+    renderDraftScreen();
+  }, 1900);
+}
+
 
 function setupSkillSelector() {
   const container = document.getElementById('skill-selector');
@@ -1470,7 +1679,7 @@ document.getElementById('btn-auto-draft').onclick = autoDraft;
 document.getElementById('btn-confirm-draft').onclick = confirmDraft;
 document.getElementById('btn-leader-skill').onclick = usePlayerSkill;
 document.getElementById('btn-end-turn').onclick = endTurn;
-document.getElementById('btn-restart').onclick = initGame;
+document.getElementById('btn-restart').onclick = showTitleScreen;
 
 // Start game on load
 window.onload = initGame;
