@@ -890,6 +890,16 @@ class SoundFx {
       setTimeout(() => this.playTone(f, 0.35, 'triangle', 0.18), i * 140);
     });
   }
+  shuffle() {
+    this.init();
+    if (!this.ctx) return;
+    for (let i = 0; i < 10; i++) {
+      setTimeout(() => {
+        const freq = 200 + Math.random() * 250;
+        this.playTone(freq, 0.04, 'sawtooth', 0.05);
+      }, i * 50);
+    }
+  }
 }
 const sfx = new SoundFx();
 
