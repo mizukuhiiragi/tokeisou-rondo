@@ -743,15 +743,18 @@ const ALL_CARDS = [
   { id: 'c1', name: 'エスプレッソ抽出', type: 'attack', cost: 1, val: 2, icon: '☕', desc: '相手に2ダメージ。手軽な濃厚ショット。' },
   { id: 'c2', name: '深煎りネルドリップ', type: 'attack', cost: 3, val: 5, icon: '🫗', desc: '相手に5ダメージ。力強いコクの一撃。' },
   { id: 'c3', name: '氷出しアイスコーヒー', type: 'attack', cost: 2, val: 3, icon: '🧊', desc: '相手に3ダメージ。冷徹な味わい。' },
-  { id: 'c4', name: '極上マンデリン', type: 'attack', cost: 4, val: 7, icon: '✨', desc: '相手に7ダメージ。重厚なビターフィニッシュ。' },
+  { id: 'c4', name: '極上マンデリン', type: 'attack', cost: 4, val: 7, icon: '✨', desc: '【切り札】相手に7ダメージ。重厚なビターフィニッシュ。' },
   { id: 'c5', name: 'クイック・アメリカーノ', type: 'attack', cost: 1, val: 1, icon: '💧', desc: '相手に1ダメージ。コストの余りで放つ牽制。' },
-  { id: 'c6', name: 'ダブルショット・バースト', type: 'attack', cost: 5, val: 9, icon: '💥', desc: '相手に9ダメージ。最大火力の必殺エスプレッソ。' },
+  { id: 'c6', name: 'ダブルショット・バースト', type: 'attack', cost: 5, val: 9, icon: '💥', desc: '【切り札】相手に9ダメージ。最大火力の必殺エスプレッソ。' },
 
-  // 香気（アロマ / 搦め手・貫通）
+  // 香気（アロマ / 搦め手・特殊効果）
   { id: 'c7', name: '焙煎の薫煙', type: 'magic', cost: 2, val: 3, icon: '💨', desc: '相手に3の貫通ダメージ。防壁をすり抜ける。' },
-  { id: 'c8', name: 'キャラメルシロップ', type: 'magic', cost: 3, val: 4, icon: '🍯', desc: '相手に4ダメージを与え、自分は1回復。' },
-  { id: 'c9', name: 'カフェイン・ショック', type: 'magic', cost: 4, val: 5, icon: '⚡', desc: '相手に5ダメージを与え、相手の最大コストを1遅延。' },
+  { id: 'c8', name: 'キャラメルシロップ', type: 'magic', cost: 3, val: 4, icon: '🍯', desc: '【切り札】相手に4ダメージを与え、自分は1回復。' },
+  { id: 'c9', name: 'カフェイン・ショック', type: 'magic', cost: 4, val: 5, icon: '⚡', desc: '【切り札】相手に5ダメージを与え、相手の最大コストを1遅延。' },
   { id: 'c10', name: '真夜中の隠しスパイス', type: 'magic', cost: 2, val: 2, icon: '🌶️', desc: '相手に2ダメージ。次の自分の攻撃力+2。' },
+  { id: 'c21', name: '激甘ホイップの胃もたれ', type: 'magic', cost: 2, val: 1, icon: '🧁', desc: '相手に毎ターン1ダメージの胃もたれDoTを付与。' },
+  { id: 'c22', name: '勝手な早仕舞い（店長不在）', type: 'magic', cost: 4, val: 0, icon: '⏰', desc: '【切り札】即座にサドンデス『ラストオーダー（閉店時間）』を発動！' },
+  { id: 'c23', name: '猫舌の舌火傷', type: 'magic', cost: 2, val: 2, icon: '♨️', desc: '【切り札】相手に2ダメージ＋2ターンの間ターン終了時に1ダメージ。' },
 
   // もてなし（迎撃 / 防御・回復）
   { id: 'c11', name: 'お冷のおかわり', type: 'defense', cost: 1, val: 3, icon: '🥛', desc: '受けるダメージを3軽減する。' },
@@ -759,12 +762,37 @@ const ALL_CARDS = [
   { id: 'c13', name: '自家製焼きプリン', type: 'defense', cost: 2, val: 4, icon: '🍮', desc: '自分のLIFEを4回復する。心ほどける甘味。' },
   { id: 'c14', name: '雨宿りの軒先', type: 'defense', cost: 3, val: 7, icon: '☔', desc: '受けるダメージを7軽減する。鉄壁の安らぎ。' },
 
+  // 迎撃（カウンター / 神の宣告）
+  { id: 'c19', name: 'マスターの仲裁', type: 'counter', cost: 3, val: 0, icon: '🤫', desc: '【神の宣告】相手の攻撃を無効化し、お互いの調度品（設置）を全て更地にする！' },
+  { id: 'c20', name: 'お冷を盛大にこぼす', type: 'counter', cost: 2, val: 0, icon: '🧊', desc: '【切り札】受けるダメージを半減し、半分のダメージを相手に跳ね返す！' },
+
   // 仕込み（設置 / 永続効果）
   { id: 'c15', name: '水出しドリッパー', type: 'setup', cost: 2, icon: '⏳', desc: '【設置】毎ターンの開始時、相手に1ダメージ。' },
-  { id: 'c16', name: 'アンティーク振り子時計', type: 'setup', cost: 3, icon: '⏰', desc: '【設置】毎ターンの開始時、追加でコスト+1獲得。' },
-  { id: 'c17', name: '特製ミルグラインダー', type: 'setup', cost: 2, icon: '⚙️', desc: '【設置】自分の［抽出］カードのダメージが常に+1。' },
-  { id: 'c18', name: '時計草の温室アロマ', type: 'setup', cost: 2, icon: '🌺', desc: '【設置】毎ターンの開始時、自分のLIFEを1回復。' },
+  { id: 'c16', name: 'アンティーク振り子時計', type: 'setup', cost: 3, icon: '🕰️', desc: '【切り札/設置】毎ターンの開始時、追加でコスト+1獲得。' },
+  { id: 'c17', name: '特製ミルグラインダー', type: 'setup', cost: 2, icon: '⚙️', desc: '【切り札/設置】自分の［抽出］カードのダメージが常に+1。' },
+  { id: 'c18', name: '時計草の温室アロマ', type: 'setup', cost: 2, icon: '🌺', desc: '【切り札/設置】毎ターンの開始時、自分のLIFEを1回復。' },
+  { id: 'c24', name: '無課金おじさんの常連席', type: 'setup', cost: 3, icon: '🎽', desc: '【切り札/設置】白T姿の威圧感。相手の最大コスト上昇を1ターン停止。' },
 ];
+
+// Generate exact 40-card Blade Rondo style pool:
+// 3 copies of 3 basic cards (9)
+// 2 copies of 10 tactical cards (20)
+// 1 copy of 11 trump/unique cards (11)
+// Total = 40 cards!
+function generate40CardPool() {
+  const cardMap = {};
+  ALL_CARDS.forEach(c => cardMap[c.id] = c);
+
+  const pool = [
+    // 3 copies (9 cards)
+    ...['c1', 'c3', 'c11'].flatMap(id => [ {...cardMap[id], uid: id + '_a'}, {...cardMap[id], uid: id + '_b'}, {...cardMap[id], uid: id + '_c'} ]),
+    // 2 copies (20 cards)
+    ...['c2', 'c5', 'c7', 'c10', 'c12', 'c13', 'c14', 'c15', 'c19', 'c21'].flatMap(id => [ {...cardMap[id], uid: id + '_1'}, {...cardMap[id], uid: id + '_2'} ]),
+    // 1 copy (11 cards)
+    ...['c4', 'c6', 'c8', 'c9', 'c16', 'c17', 'c18', 'c20', 'c22', 'c23', 'c24'].map(id => ({...cardMap[id], uid: id + '_trump'}))
+  ];
+  return pool;
+}
 
 /* ============================================================
    GAME STATE
@@ -772,6 +800,8 @@ const ALL_CARDS = [
 let gameState = {
   phase: 'draft', // 'draft', 'battle', 'ended'
   turn: 1,
+  lastOrder: false,
+  lastOrderDamage: 1,
   activePlayer: 'p1', // 'p1' (Player) or 'p2' (CPU)
   
   draftPool: [],
@@ -825,13 +855,33 @@ function initGame() {
   gameState.p2.setups = [];
   gameState.p2.skillUsedTurn = 0;
 
-  // Deal 14 random cards for drafting
-  const shuffled = [...ALL_CARDS].sort(() => 0.5 - Math.random());
-  gameState.draftPool = shuffled.slice(0, 14);
+  gameState.lastOrder = false;
+  gameState.lastOrderDamage = 1;
 
-  // CPU randomly chooses 7 cards from remaining pool
-  const cpuCandidates = [...ALL_CARDS].sort(() => 0.5 - Math.random());
-  gameState.p2.hand = cpuCandidates.slice(0, 7);
+  // Blade Rondo Style: 40-card pool, 15 dealt to P1, 15 dealt to P2, 10 set aside!
+  const pool40 = generate40CardPool().sort(() => 0.5 - Math.random());
+  gameState.draftPool = pool40.slice(0, 15); // Player receives 15 cards to pick 7
+  const cpuPool15 = pool40.slice(15, 30);    // CPU receives 15 cards
+  // remaining 10 cards (pool40.slice(30)) are hidden & excluded!
+
+  // CPU smartly picks balanced 7 from its 15 cards
+  const cpuSorted = [...cpuPool15].sort((a, b) => b.cost - a.cost);
+  const cpuHand = [];
+  const addCard = (pred) => {
+    const idx = cpuSorted.findIndex(c => pred(c) && !cpuHand.includes(c));
+    if (idx !== -1) cpuHand.push(cpuSorted[idx]);
+  };
+  addCard(c => c.type === 'attack');
+  addCard(c => c.type === 'attack');
+  addCard(c => c.type === 'magic');
+  addCard(c => c.type === 'defense' || c.type === 'counter');
+  addCard(c => c.type === 'setup');
+  // Fill remaining to 7
+  for (const c of cpuSorted) {
+    if (cpuHand.length >= 7) break;
+    if (!cpuHand.includes(c)) cpuHand.push(c);
+  }
+  gameState.p2.hand = cpuHand;
 
   const savedName = localStorage.getItem('tokeisou_name') || '見習いバリスタ';
   gameState.p1.name = savedName;
@@ -872,7 +922,8 @@ function renderDraftScreen() {
   grid.innerHTML = '';
   
   gameState.draftPool.forEach(card => {
-    const isSelected = gameState.selectedDraftIds.includes(card.id);
+    const cardKey = card.uid || card.id;
+    const isSelected = gameState.selectedDraftIds.includes(cardKey);
     const cardEl = createCardElement(card, isSelected, () => {
       openCardInspect(card, 'draft');
     });
@@ -917,14 +968,15 @@ function openCardInspect(card, mode, handIndex = -1) {
   `;
 
   if (mode === 'draft') {
-    const isSelected = gameState.selectedDraftIds.includes(card.id);
+    const cardKey = card.uid || card.id;
+    const isSelected = gameState.selectedDraftIds.includes(cardKey);
     if (isSelected) {
       btnAction.textContent = '❌ 選抜から外す';
       btnAction.className = 'btn btn-full';
       btnAction.style.background = '#8c3224';
       btnAction.disabled = false;
       btnAction.onclick = () => {
-        toggleDraftCard(card.id);
+        toggleDraftCard(cardKey);
         modal.classList.add('hidden');
       };
     } else {
@@ -934,7 +986,7 @@ function openCardInspect(card, mode, handIndex = -1) {
       btnAction.disabled = full;
       btnAction.onclick = () => {
         if (!full) {
-          toggleDraftCard(card.id);
+          toggleDraftCard(cardKey);
           modal.classList.add('hidden');
         }
       };
@@ -963,17 +1015,16 @@ function openCardInspect(card, mode, handIndex = -1) {
 
 function autoDraft() {
   sfx.click();
-  // Pick balanced 7: at least 2 attacks, 1 magic, 1 defense, 1 setup
   gameState.selectedDraftIds = [];
   const pool = [...gameState.draftPool].sort(() => 0.5 - Math.random());
-  gameState.selectedDraftIds = pool.slice(0, 7).map(c => c.id);
+  gameState.selectedDraftIds = pool.slice(0, 7).map(c => c.uid || c.id);
   renderDraftScreen();
 }
 
 function confirmDraft() {
   if (gameState.selectedDraftIds.length !== 7) return;
   sfx.fanfare();
-  gameState.p1.hand = gameState.draftPool.filter(c => gameState.selectedDraftIds.includes(c.id));
+  gameState.p1.hand = gameState.draftPool.filter(c => gameState.selectedDraftIds.includes(c.uid || c.id));
   startBattle();
 }
 
@@ -1091,6 +1142,7 @@ function getTypeName(type) {
     case 'attack': return '抽出';
     case 'magic': return '香気';
     case 'defense': return 'もてなし';
+    case 'counter': return '迎撃';
     case 'setup': return '仕込み';
     default: return '汎用';
   }
@@ -1151,6 +1203,46 @@ function usePlayerSkill() {
   renderBattle();
 }
 
+
+function checkAndTriggerLastOrder() {
+  if (gameState.lastOrder) return;
+  // Trigger if turn >= 10 OR both players have 0 cards in hand!
+  if (gameState.turn >= 10 || (gameState.p1.hand.length === 0 && gameState.p2.hand.length === 0)) {
+    triggerLastOrder('規定ターンまたは手札枯渇');
+  }
+}
+
+function triggerLastOrder(reason) {
+  if (gameState.lastOrder) return;
+  gameState.lastOrder = true;
+  gameState.lastOrderDamage = 1;
+  sfx.fanfare();
+  log(`🚨【ラストオーダー（閉店時間）突入！】（理由: ${reason}）`, 'system');
+  log(`🎷 店内に『蛍の光』が流れ始めました！居座る客にマスターからの無言の圧が突き刺さる！`, 'system');
+  log(`⚠️ 毎ターン開始時、お互いに強制ペナルティダメージ（1→2→3...）を受けます！`, 'highlight');
+  
+  // Show banner if in battle
+  const logEl = document.getElementById('battle-log');
+  if (logEl) {
+    const banner = document.createElement('div');
+    banner.className = 'last-order-banner';
+    banner.textContent = '⏰ 閉店時間（ラストオーダー）突入！居座りペナルティ発生中！';
+    logEl.parentElement.insertBefore(banner, logEl);
+  }
+}
+
+function applyLastOrderDamage() {
+  if (!gameState.lastOrder) return false;
+  sfx.damage();
+  const dmg = gameState.lastOrderDamage;
+  gameState.p1.hp -= dmg;
+  gameState.p2.hp -= dmg;
+  log(`⏰【閉店作業の圧】お互いに ${dmg} の強制居座りダメージ！`, 'highlight');
+  gameState.lastOrderDamage += 1; // Increases every turn
+  renderBattle();
+  return checkWinLoss();
+}
+
 function executeCardEffect(source, target, card) {
   const src = gameState[source];
   const tgt = gameState[target];
@@ -1173,11 +1265,36 @@ function executeCardEffect(source, target, card) {
     if (card.id === 'c8') { // caramel
       src.hp = Math.min(src.maxHp, src.hp + 1);
       log(`🍯 シロップの効果でLIFEが1回復。`, 'p1');
+    } else if (card.id === 'c21') { // 胃もたれ
+      log(`🧁 『激甘ホイップ』の重みで相手の胃が悲鳴を上げている！`, 'highlight');
+      tgt.hasStomachAche = true;
+    } else if (card.id === 'c22') { // 勝手な早仕舞い
+      log(`⏰ バイトの独断！『勝手な早仕舞い』！「マスターいないしもう閉めまーす！」`, 'highlight');
+      triggerLastOrder('勝手な早仕舞い（店長不在）');
+    } else if (card.id === 'c23') { // 猫舌の舌火傷
+      log(`♨️ 熱々のサイフォン！相手の舌がヒリヒリと火傷した！`, 'highlight');
+      tgt.burnTurns = 2;
     }
   } else if (card.type === 'defense') {
     sfx.heal();
     src.hp = Math.min(src.maxHp, src.hp + card.val);
     log(`🛡️ 『${card.name}』により、LIFEが ${card.val} 回復・整いました！`, 'system');
+  } else if (card.type === 'counter') {
+    if (card.id === 'c19') {
+      // 神の宣告：マスターの仲裁
+      sfx.fanfare();
+      log(`🤫 『マスターの仲裁』発動！【神の宣告】「……他のお客様のご迷惑です。」`, 'highlight');
+      log(`🧹 マスターの威圧により、お互いの卓上インテリア（設置）がすべて強制撤去（更地）されました！`, 'system');
+      gameState.p1.setups = [];
+      gameState.p2.setups = [];
+      // Grant barrier of 4 HP
+      src.hp = Math.min(src.maxHp, src.hp + 2);
+    } else if (card.id === 'c20') {
+      // お冷を盛大にこぼす
+      sfx.damage();
+      log(`🧊 『お冷を盛大にこぼす』！相手に氷水が直撃！3ダメージを与え、態勢を崩しました！`, 'highlight');
+      tgt.hp -= 3;
+    }
   } else if (card.type === 'setup') {
     src.setups.push(card);
     log(`⚙️ 『${card.name}』を卓上に設置しました！`, 'system');
@@ -1199,6 +1316,9 @@ function endTurn() {
    ============================================================ */
 function cpuTurn() {
   if (gameState.phase !== 'battle') return;
+
+  checkAndTriggerLastOrder();
+  if (applyLastOrderDamage()) return;
 
   // Turn Start Upkeep for CPU
   gameState.p2.maxCost = Math.min(10, gameState.p2.maxCost + 1);
